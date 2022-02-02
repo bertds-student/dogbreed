@@ -1,5 +1,6 @@
 import os
 
+# Connecting to the Azure SQL database and returning a connection object.
 from utils import connectWithAzure
 from azureml.core.environment import Environment
 from azureml.core.model import InferenceConfig
@@ -48,6 +49,15 @@ def prepareDeployment(ws, environment):
     return service
 
 def downloadLatestModel(ws):
+    '''
+    Download the latest version of the model from the workspace and store it in the local directory
+    
+    Args:
+      ws: The workspace to use.
+    
+    Returns:
+      The model object.
+    '''
     local_model_path = os.environ.get('LOCAL_MODEL_PATH')
     model = Model(ws, name=MODEL_NAME)
     model.download(local_model_path, exist_ok=True)

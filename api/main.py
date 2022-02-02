@@ -21,6 +21,15 @@ model = load_model('outputs/animal-cnn-test')
 
 @app.post('/upload/image')
 async def uploadImage(img: UploadFile = File(...)):
+    '''
+    It takes in an image and returns the animal that is in the image.
+    
+    Args:
+      img (UploadFile): The image file that is being uploaded.
+    
+    Returns:
+      The animal that the model predicts.
+    '''
     original_image = Image.open(img.file)
     original_image = original_image.resize((64, 64))
     images_to_predict = np.expand_dims(np.array(original_image), axis=0)

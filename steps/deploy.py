@@ -1,6 +1,6 @@
 import os
 
-from scripts.utils import connectWithAzure
+from steps.utils import connectWithAzure
 from azureml.core.environment import Environment
 from azureml.core.model import InferenceConfig
 from azureml.core.webservice import AciWebservice

@@ -1,0 +1,86 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Create and publish a Docker image
+
+on:
+  push:
+    branches: ['release']
+
+jobs:
+  api-creation:
+    runs-on: ubuntu-latest
+
+    env:
+      DEPLOYMENT_DEPENDENCIES: deployment_environment.yml
+      DEPLOYMENT_ENV_NAME: dogbreed-classification-env-deployment
+      SCORE_SERVICE_NAME: dogbreed-classification-svc
+      LOCAL_MODEL_PATH: api/outputs
+      LOCAL_DEPLOYMENT: true
+
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: 'Set up python'
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+          cache: 'pip'
+
+      - name: 'install requirements'
+        run: pip install -r requirements.txt
+
+      - name: 'Run deployment script'
+        id: deployment
+        run: |
+          python steps/deploy.py
+
+      - name: Upload API Code for Docker
+        uses: actions/upload-artifact@v2
+        with:
+          name: docker-config
+          path: api
+
+  docker-build-and-push:
+    needs: [api-creation]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download docker-config artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: docker-config
+
+      - name: Gather Docker Meta Information
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          # list of Docker images to use as base name for tags
+          images: |
+            ghcr.io/nathansegers/05-azuremlops-api
+          # generate Docker tags based on the following events/attributes:
+          # The GitHub Branch
+          # The GitHub SHA
+          # More info: https://github.com/docker/build-push-action/blob/master/docs/advanced/tags-labels.md
+          tags: |
+            type=ref,event=branch
+            type=sha
+      
+      # Enter your GITHUB Token here!
+      - name: Login to GHCR
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}

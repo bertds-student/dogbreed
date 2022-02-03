@@ -1,2 +1,4 @@
 fastapi[all]==0.70.1
+tensorflow-macos
+tensorflow-metal
 Pillow==8.4.0

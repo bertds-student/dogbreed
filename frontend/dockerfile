@@ -1,7 +1,13 @@
+# frontend/Dockerfile
 FROM python:3.9
-WORKDIR /code
+
+WORKDIR /app
+
 COPY ./requirements.dev.txt /code/requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
-COPY outputs /code/outputs
-COPY main.py main.py
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
+
+COPY . .
+
+EXPOSE 8501
+
+CMD ["streamlit", "run", "main.py"]
